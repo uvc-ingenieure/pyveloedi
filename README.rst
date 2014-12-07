@@ -2,6 +2,7 @@ pyveloedi
 =========
 
 Library for connecting to Veloconnect webservices.
+The Veloconnect specification is available at: http://www.veloconnect.de/
 
 Features:
 
