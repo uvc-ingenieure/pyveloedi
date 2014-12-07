@@ -50,3 +50,5 @@ Example
     # Beware: Even if a test mode exists and it's implemented, some
     #         suppliers don't respect it.
     # order.finish()
+
+.. footer:: Copyright (c) UVC Ingenieure http://uvc.de/
