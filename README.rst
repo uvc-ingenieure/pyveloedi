@@ -14,7 +14,8 @@ Features:
 Example
 =======
 
-.. code-block:: python
+.. code:: python
+
     context = VeloContext(url=VELOCONNECT_URL, userid=VELOCONNECT_USER,
                           passwd=VELOCONNECT_PASSWD, istest=False, log=False)
     EDIProduct = context.get('Product')
