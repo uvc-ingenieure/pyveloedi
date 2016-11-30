@@ -504,7 +504,8 @@ class Product(VeloModelMixin, ProductBase):
     @property
     def ean13(self):
         ean13 = self._data.xpath(
-            '//cac:ID[@identificationSchemeID="EAN/UCC-13"]',
+            'cac:Item/cac:StandardItemIdentification'
+            '/cac:ID[@identificationSchemeID="EAN/UCC-13"]',
             namespaces=NAMESPACES)
         return len(ean13) and ean13[0].text or None
 
