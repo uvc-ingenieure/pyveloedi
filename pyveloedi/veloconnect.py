@@ -389,6 +389,18 @@ class SearchResult(Operation):
 class CreateOrder(Operation):
     _name = 'Order'
 
+    def get_url_args(self):
+        args = [('RequestName', 'CreateOrderRequest')]
+        for line in self._lines:
+            product_id = line.find('cac:SellersItemIdentification/cac:ID',
+                    namespaces=NAMESPACES).text
+            quantity = line.find('cbc:Quantity', namespaces=NAMESPACES)
+            args += [
+                ('Quantity.' + product_id, quantity.text),
+                ('quantityUnitCode.' + product_id, quantity.get('quantityUnitCode'))
+            ]
+        return args
+
     def get_xml(self):
         res = CreateOrderRequest()
         res.extend(self._xml_auth)
@@ -435,6 +447,10 @@ class ViewOrder(Operation):
 
 class FinishOrder(Operation):
     _name = 'Order'
+
+    def get_url_args(self):
+        return [('RequestName', 'FinishOrderRequest'),
+                ('TransactionID', self._tan),]
 
     def get_xml(self):
         res = FinishOrderRequest()
