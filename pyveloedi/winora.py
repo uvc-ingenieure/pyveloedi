@@ -21,12 +21,12 @@
 # THE SOFTWARE.
 
 import copy
-import urllib2
+import urllib.request
 from lxml import etree
-import urllib
+import urllib.parse
 
 from .base import ProductBase, ContextBase, OrderBase, EDIException, Model
-import base
+from . import base
 
 BASKETNAME = 'warenkorb'
 
@@ -66,8 +66,8 @@ class Context(ContextBase):
         params = [('loginid', self._userid),
                    ('password', self._passwd)] + params
         self.log('Args', str(params))
-        url = '%s?%s' % (self._url, urllib.urlencode(params))
-        return urllib2.urlopen(url).read()
+        url = '%s?%s' % (self._url, urllib.parse.urlencode(params))
+        return urllib.request.urlopen(url).read()
 
     def check(self):
         vi = VersionInfo(self)
@@ -100,7 +100,7 @@ class ItemDetails(WinoraBase):
         self._codes = codes
         root = self._ctx.dispatch_request(self)
         items = root.xpath('/root/item')
-        return map(Product, items)
+        return list(map(Product, items))
 
 
 class SearchProducts(WinoraBase):
@@ -116,7 +116,7 @@ class SearchProducts(WinoraBase):
         self._page = int(offset / limit)
         root = self._ctx.dispatch_request(self)
         items = root.xpath('/root/item')
-        return map(Product, items)
+        return list(map(Product, items))
 
 
 class DeleteBasket(WinoraBase):
@@ -154,7 +154,7 @@ class OrderBasket(WinoraBase):
     def execute(self):
         root = self._ctx.dispatch_request(self)
         res, = root.xpath('/root/ordernumber')
-        return unicode(res.text)
+        return str(res.text)
 
 
 class Product(ProductBase):

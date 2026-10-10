@@ -22,12 +22,12 @@
 
 from lxml import etree
 from lxml.builder import ElementMaker
-import urllib
-import urllib2
+import urllib.parse
+import urllib.request
 import re
 
 from .base import ProductBase, ContextBase, EDIException, OrderBase, Model
-import base
+from . import base
 
 
 CAC_NAMESPACE = 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-1.0'
@@ -201,16 +201,16 @@ class Context(ContextBase):
                    ('Password', self._passwd),
                    ('IsTest', self._istest),]
 
-        params = urllib.urlencode(params)
+        params = urllib.parse.urlencode(params)
         url = '%s?%s' % (self._url, params)
         self.log('URL for GET request', url)
-        return urllib2.urlopen(url).read()
+        return urllib.request.urlopen(url).read()
 
     def query_post(self, data):
-        data = '<?xml version="1.0" encoding="utf-8"?>\n' + data
+        data = b'<?xml version="1.0" encoding="utf-8"?>\n' + data
         self.log('XML for POST request', data)
-        req = urllib2.Request(self._url, data, XML_POST_HEADER)
-        return urllib2.urlopen(req).read()
+        req = urllib.request.Request(self._url, data, XML_POST_HEADER)
+        return urllib.request.urlopen(req).read()
 
 
 class Operation(object):
@@ -283,7 +283,7 @@ class GetClassificationScheme(Operation):
     _name = 'GetClassificationScheme'
 
     def get_xml(self):
-        return GetClassificationSchemeRequest(self._xml_auth)
+        return GetClassificationSchemeRequest(*self._xml_auth)
 
     def execute(self):
         res = self._ctx.dispatch_request(self)
@@ -318,7 +318,7 @@ class GetItemDetailsList(Operation):
         req.extend(self._xml_auth)
         for code in self._codes:
             req.append(RequestEntry(SellersItemIdentification(
-                        ID(unicode(code)))))
+                        ID(str(code)))))
         return req
 
     def execute(self, codes):
@@ -370,8 +370,8 @@ class SearchResult(Operation):
         res = SearchResultRequest()
         res.extend(self._xml_auth + [
                 TransactionID(self._tan),
-                StartIndex(unicode(self._offset)),
-                Count(unicode(self._limit)),
+                StartIndex(str(self._offset)),
+                Count(str(self._limit)),
                 ResultFormat('ID_ONLY')])
         return res
 
@@ -478,7 +478,7 @@ class TransactionMixin(object):
         try:
             rbk = Rollback(self._ctx)
             rbk.execute(self.tan)
-        except VeloConnectException, e:
+        except VeloConnectException as e:
             if e.code != ERR_NOT_SUPPORTED:
                 raise
 
@@ -538,7 +538,7 @@ class Product(VeloModelMixin, ProductBase):
         url = len(urls) and urls[0].text or None
         if url is None:
             return None
-        return buffer(urllib2.urlopen(url).read())
+        return urllib.request.urlopen(url).read()
 
     @classmethod
     def search(cls, keywords, offset=0, limit=20, count=False):

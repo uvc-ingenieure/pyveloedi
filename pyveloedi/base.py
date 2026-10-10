@@ -24,7 +24,7 @@ import decimal
 from lxml import etree
 import re
 import sys
-import urllib2
+import urllib.request
 
 
 class Field(object):
@@ -68,7 +68,7 @@ class String(Field):
 
     def _convert(self, node):
         if self._exp is None:
-            return unicode(node.text)
+            return str(node.text)
         else:
             return self._exp.sub(self._sub, node.text)
 
@@ -86,7 +86,7 @@ class Decimal(Field):
 
 class URL(Field):
     def _convert(self, node):
-        return buffer(urllib2.urlopen(node.text).read())
+        return urllib.request.urlopen(node.text).read()
 
 
 class One2Many(Field):
@@ -101,7 +101,7 @@ class One2Many(Field):
         return self._default
 
     def _convert(self, items):
-        return map(self._kwargs['model'], items)
+        return list(map(self._kwargs['model'], items))
 
 
 class Many2One(Field):
@@ -211,8 +211,10 @@ class ContextBase(object):
             cls = frame.f_locals.get('self', False)
             cls = cls.__class__.__name__ + '.' if cls else ''
 
-            print '[ @%s%s (%s) ]' % (cls, frame.f_code.co_name, info)
-            print msg + '\n'
+            if isinstance(msg, bytes):
+                msg = msg.decode('utf-8', 'replace')
+            print('[ @%s%s (%s) ]' % (cls, frame.f_code.co_name, info))
+            print(msg + '\n')
 
     def get(self, clsname):
         raise NotImplementedError()
